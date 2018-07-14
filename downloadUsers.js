@@ -183,7 +183,7 @@ function continueSearchQueueIteration(cb) {
 }
 
 function searchCallBack(err, data, headers, cb) {
-    if (_.isNil(err)) {
+    if (!_.isNil(err)) {
         throw err;
     }
 
