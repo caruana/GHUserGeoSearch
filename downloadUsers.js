@@ -38,6 +38,8 @@ init();
 // *** Initialize Tasks *** //;
 function init() {
 
+    const searchArray = buildSearchQuery();
+
     console.log('**************************************');
     console.log('Executing ' + searchArray.length + ' API Calls.');
     console.log('Will need to limit to 30 calls a minute.');
@@ -45,7 +47,7 @@ function init() {
     console.log('Current Time: ' + Date.now());
     console.log('**************************************');
 
-    buildSearchQueue(buildSearchQuery())
+    buildSearchQueue(searchArray)
 }
 
 function initUserSearchFilesMerge(callbackInitUserInfo) {
