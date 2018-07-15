@@ -34,12 +34,12 @@ So I decided to write a small script in NodeJS over a weekend and called it **Gi
   
 #### Install GitHub Geo User Search
 
-* Close the repo
+* Clone the repo
 * npm install
 * Create a Data Directory (yes, I was to lazy to automatically check and make a dir, lol)
 * Open the downloadUsers.js file 
-  * Change the location variable value; insert the location you would like to search (line 21)
-  * Change the client value; insert your GitHub Personal Token (line 22)
+  * Change the location variable value; insert the location you would like to search (line 10)
+  * Change the client value; insert your GitHub Personal Token (line 11)
 * node downloadUsers.js
 * Depending on the search results this could take a while
 
