@@ -13,14 +13,15 @@ const userSearchDir = 'UserSearch',
     userInfoFileName = 'userInfo',
     concatUserSearchDataFileName = 'concatUserSearch',
     concatUserInfoDataFileName = 'concatUserInfo',
-    location = 'prague', // change this value to whatever search location you want
     param = 'location:' + location + '+in:login+type:user',
     order = 'asc',
     sort = 'created';
 
+// change these values
+const location = 'prague', // change this value to whatever search location you want
+    client = github.client('[insert token here]'); //insert GitHub personal token here
 
 // initialize
-const client = github.client('[insert token here]');
 var ghsearch = client.search(),
     resultData = [],
     currentSearchQuery = '';
@@ -67,7 +68,7 @@ function initUserSearchFilesMerge(callbackInitUserInfo) {
         }
         var mergedFileName = nameFile(concatUserSearchDataFileName);
         fs.writeFile(mergedFileName, JSON.stringify(allJSON, null, 2), 'utf-8', function (err) {
-            if(err) {
+            if (err) {
                 throw err;
             }
             callbackInitUserInfo(mergedFileName);
@@ -106,7 +107,7 @@ function initUserInfo(fileName) {
     });
 }
 
-function initUserInfoFilesMerge(){
+function initUserInfoFilesMerge() {
     console.log('**************************************');
     console.log('Start merging User Info data files');
     console.log('Current Time: ' + Date.now());
@@ -121,7 +122,7 @@ function initUserInfoFilesMerge(){
         }
         var mergedFileName = nameFile(concatUserInfoDataFileName);
         fs.writeFile(mergedFileName, JSON.stringify(allJSON, null, 2), 'utf-8', function (err) {
-            if(err) {
+            if (err) {
                 throw err;
             }
         });
@@ -150,7 +151,7 @@ function buildSearchQueue() {
         initUserSearchFilesMerge(initUserInfo);
     };
     q.push(buildSearchQuery(), function (err) {
-        if(err) {
+        if (err) {
             throw err;
         }
         console.log('Search Query Pushed to Search Queue');
@@ -205,7 +206,7 @@ function searchCallBack(err, data, headers, cb) {
             }
             console.log('-- Saved Items: ' + resultData.length);
             fs.writeFile(nameFile(userSearchFileName, userSearchDir), JSON.stringify(resultData, null, 2), 'utf-8', function (err) {
-                if(err){
+                if (err) {
                     console.log(err);
                 }
             });
@@ -229,7 +230,7 @@ function buildUserInfoQueue(searchArray) {
         var uname = task.login;
         var ghu = client.user(uname);
         ghu.info(function (err, data, headers) {
-            if(err) {
+            if (err) {
                 console.log(err);
             }
 
@@ -237,7 +238,7 @@ function buildUserInfoQueue(searchArray) {
             console.log(cnt + ': ' + data.login);
 
             fs.writeFile(nameFile(userInfoFileName, userInfoDir), JSON.stringify(data, null, 2), 'utf-8', function (err) {
-                if(err){
+                if (err) {
                     console.log(err);
                 }
             });
@@ -249,7 +250,7 @@ function buildUserInfoQueue(searchArray) {
         initUserInfoFilesMerge();
     };
     q.push(searchArray, function (err) {
-        if(err) {
+        if (err) {
             throw err;
         }
         console.log("GitHub user info pushed to queue.")
