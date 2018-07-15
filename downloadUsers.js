@@ -6,6 +6,10 @@ var fs = require('fs'),
     async = require('async'),
     _ = require('lodash');
 
+// change these values
+const location = 'prague', // change this value to whatever search location you want
+    client = github.client('51a67aad875448498011ecd6c23aba68348befe2'); //insert GitHub personal token here
+
 // constants
 const userSearchDir = 'UserSearch',
     userInfoDir = 'UserInfo',
@@ -16,10 +20,6 @@ const userSearchDir = 'UserSearch',
     param = 'location:' + location + '+in:login+type:user',
     order = 'asc',
     sort = 'created';
-
-// change these values
-const location = 'prague', // change this value to whatever search location you want
-    client = github.client('[insert token here]'); //insert GitHub personal token here
 
 // initialize
 var ghsearch = client.search(),
