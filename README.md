@@ -5,7 +5,7 @@ I travel a lot and I like networking with developers in the city I'm visiting to
 
 I thought I would try to scale my networking by growth hacking a process that streamlined the number of people I could connect with before I got to my destination.
 
-So I decided to write a small script in NodeJS over a weekend and called it **GitHub Geo User Search**. My main concern doing this is what people's reactions will be. I will be documenting this test in a series of blog posts, the first of witch can be found here.
+So I decided to write a small script in NodeJS over a weekend and called it **GitHub Geo User Search**. My main concern doing this is what people's reactions will be. I will be documenting this test in a series of blog posts, the first of which can be found here.
 
 ### Requirements
 
