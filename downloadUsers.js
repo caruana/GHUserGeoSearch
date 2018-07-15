@@ -8,7 +8,7 @@ var fs = require('fs'),
 
 // change these values
 const location = 'prague', // change this value to whatever search location you want
-    client = github.client('51a67aad875448498011ecd6c23aba68348befe2'); //insert GitHub personal token here
+    client = github.client('insert value here'); //insert GitHub personal token here
 
 // constants
 const userSearchDir = 'UserSearch',
