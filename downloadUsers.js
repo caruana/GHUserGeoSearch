@@ -1,18 +1,27 @@
 // Require
-var fs = require('fs'),
+const fs = require('fs'),
     path = require('path'),
     github = require('octonode'),
     sleep = require('sleep'),
     async = require('async'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    log = require('simple-node-logger');
 
 // change these values
-const location = 'prague', // change this value to whatever search location you want
-    client = github.client('51a67aad875448498011ecd6c23aba68348befe2'); //insert GitHub personal token here
+const location = 'toronto', // change this value to whatever search location you want
+    client = github.client('GitHubPersonalToken'); //insert GitHub personal token here
+
+//TODO: Move GitHub token to .env file
 
 // constants
-const userSearchDir = 'UserSearch',
+const dataDir = 'Data',
+    searchDir = location + 'Search',
+    userSearchDir = 'UserSearch',
     userInfoDir = 'UserInfo',
+    fqDataDir = path.join(__dirname, dataDir),
+    fqSearchDir = path.join(fqDataDir, searchDir.charAt(0).toUpperCase() + searchDir.slice(1)),
+    fqUserSearchDir = path.join(fqSearchDir, userSearchDir),
+    fqUserInfoDir = path.join(fqSearchDir, userInfoDir),
     userSearchFileName = 'userSearch',
     userInfoFileName = 'userInfo',
     concatUserSearchDataFileName = 'concatUserSearch',
@@ -22,12 +31,12 @@ const userSearchDir = 'UserSearch',
     sort = 'created';
 
 // initialize
-var ghsearch = client.search(),
+let ghsearch = client.search(),
     resultData = [],
     currentSearchQuery = '';
 
 // search paging initialize
-var resultCount = 0,
+let resultCount = 0,
     perPage = 100,
     remainder = (resultCount % perPage) > 0 ? 1 : 0,
     totalPages = Math.floor(resultCount / perPage) + remainder,
@@ -39,7 +48,7 @@ init();
 // *** Initialize Tasks *** //;
 function init() {
 
-    const searchArray = buildSearchQuery();
+    const searchArray = ['zzl0'];
 
     console.log('**************************************');
     console.log('Executing ' + searchArray.length + ' API Calls.');
@@ -48,7 +57,8 @@ function init() {
     console.log('Current Time: ' + Date.now());
     console.log('**************************************');
 
-    buildSearchQueue(searchArray)
+    initDataDirectories();
+    buildSearchQueue(searchArray);
 }
 
 function initUserSearchFilesMerge(callbackInitUserInfo) {
@@ -58,15 +68,15 @@ function initUserSearchFilesMerge(callbackInitUserInfo) {
     console.log('**************************************');
 
 
-    fs.readdir(nameDir(userSearchDir), function (err, items) {
+    fs.readdir(fqUserSearchDir, function (err, items) {
         if (err) throw err;
-        var allJSON = [];
-        for (var i = 0; i < items.length; i++) {
-            var contents = fs.readFileSync(path.join(nameDir(userSearchDir), items[i]));
-            var jsonContent = JSON.parse(contents);
+        let allJSON = [];
+        for (let i = 0; i < items.length; i++) {
+            let contents = fs.readFileSync(path.join(fqUserSearchDir, items[i]));
+            let jsonContent = JSON.parse(contents);
             allJSON = allJSON.concat(jsonContent);
         }
-        var mergedFileName = nameFile(concatUserSearchDataFileName);
+        let mergedFileName = nameFile(concatUserSearchDataFileName);
         fs.writeFile(mergedFileName, JSON.stringify(allJSON, null, 2), 'utf-8', function (err) {
             if (err) {
                 throw err;
@@ -83,7 +93,7 @@ function initUserInfo(fileName) {
             throw err;
         }
 
-        var searchArray = JSON.parse(data);
+        let searchArray = JSON.parse(data);
 
         if (searchArray.length > 0) {
 
@@ -112,15 +122,15 @@ function initUserInfoFilesMerge() {
     console.log('Start merging User Info data files');
     console.log('Current Time: ' + Date.now());
     console.log('**************************************');
-    fs.readdir(nameDir(userInfoDir), function (err, items) {
+    fs.readdir(fqUserInfoDir, function (err, items) {
         if (err) throw err;
-        var allJSON = [];
-        for (var i = 0; i < items.length; i++) {
-            var contents = fs.readFileSync(path.join(nameDir(userInfoDir), items[i]));
-            var jsonContent = JSON.parse(contents);
+        let allJSON = [];
+        for (let i = 0; i < items.length; i++) {
+            let contents = fs.readFileSync(path.join(fqUserInfoDir, items[i]));
+            let jsonContent = JSON.parse(contents);
             allJSON = allJSON.concat(jsonContent);
         }
-        var mergedFileName = nameFile(concatUserInfoDataFileName);
+        let mergedFileName = nameFile(concatUserInfoDataFileName);
         fs.writeFile(mergedFileName, JSON.stringify(allJSON, null, 2), 'utf-8', function (err) {
             if (err) {
                 throw err;
@@ -131,9 +141,18 @@ function initUserInfoFilesMerge() {
 
 // *** End Initialize Tasks *** //
 
+// *** Validate Directory Structure *** //
+function initDataDirectories (){
+    if (!fs.existsSync(fqDataDir)) fs.mkdirSync(fqDataDir);
+    if (!fs.existsSync(fqSearchDir)) fs.mkdirSync(fqSearchDir);
+    if (!fs.existsSync(fqUserSearchDir)) fs.mkdirSync(fqUserSearchDir);
+    if(!fs.existsSync(fqUserInfoDir)) fs.mkdirSync(fqUserInfoDir);
+}
+// *** End Validate Directory Structure *** //
+
 // *** Search GitHub *** //
-function buildSearchQueue() {
-    var q = async.queue(function (query, cb) {
+function buildSearchQueue(searchQuery) {
+    let q = async.queue(function (query, cb) {
         sleep.sleep(2); // must limit github api calls to 30/minute
         currentSearchQuery = query + '+' + param;
         console.log('Running Query: ' + query);
@@ -150,7 +169,7 @@ function buildSearchQueue() {
     q.drain = function () {
         initUserSearchFilesMerge(initUserInfo);
     };
-    q.push(buildSearchQuery(), function (err) {
+    q.push(searchQuery, function (err) {
         if (err) {
             throw err;
         }
@@ -159,10 +178,10 @@ function buildSearchQueue() {
 }
 
 function buildSearchQuery() {
-    var alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z', '0', '9', '8', '7', '6', '5', '4', '3', '2', '1', '-', '_', '.'];
-    var searchArray = [];
+    let alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'x', 'y', 'z', '0', '9', '8', '7', '6', '5', '4', '3', '2', '1', '-', '_', '.'];
+    let searchArray = [];
     _.forEach(alphabet, function (val) {
-        var first = val;
+        let first = val;
         _.forEach(alphabet, function (val) {
             searchArray.push(first + val);
         });
@@ -171,6 +190,7 @@ function buildSearchQuery() {
 }
 
 function continueSearchQueueIteration(cb) {
+    sleep.sleep(2); // must limit github api calls to 30/minute
     ghsearch.users({
         q: currentSearchQuery,
         type: 'user',
@@ -195,7 +215,7 @@ function searchCallBack(err, data, headers, cb) {
 
     console.log('- Current Page: ' + currentPage + ', Total Count: ' + data.total_count + ', Item Count: ' + data.items.length + ', Total Pages: ' + Math.floor(resultCount / perPage) + remainder);
 
-    if (totalPages > currentPage && maxPage > currentPage) {
+    if (totalPages > currentPage && maxPage > currentPage) { //TODO: if maxPage will be hit, further break down SearchArray to characters + 1
         currentPage = currentPage + 1;
         resultData = resultData.concat(data.items);
         continueSearchQueueIteration(cb);
@@ -205,7 +225,7 @@ function searchCallBack(err, data, headers, cb) {
                 resultData = resultData.concat(data.items);
             }
             console.log('-- Saved Items: ' + resultData.length);
-            fs.writeFile(nameFile(userSearchFileName, userSearchDir), JSON.stringify(resultData, null, 2), 'utf-8', function (err) {
+            fs.writeFile(nameFile(userSearchFileName, fqUserSearchDir), JSON.stringify(resultData, null, 2), 'utf-8', function (err) {
                 if (err) {
                     console.log(err);
                 }
@@ -224,11 +244,11 @@ function searchCallBack(err, data, headers, cb) {
 // *** Get GitHub User Info *** //
 function buildUserInfoQueue(searchArray) {
 
-    var cnt = 0;//resultData.length;
-    var q = async.queue(function (task, cb) {
+    let cnt = 0;//resultData.length;
+    let q = async.queue(function (task, cb) {
         sleep.sleep(2);
-        var uname = task.login;
-        var ghu = client.user(uname);
+        let uname = task.login;
+        let ghu = client.user(uname);
         ghu.info(function (err, data, headers) {
             if (err) {
                 console.log(err);
@@ -237,7 +257,7 @@ function buildUserInfoQueue(searchArray) {
             cnt++;
             console.log(cnt + ': ' + data.login);
 
-            fs.writeFile(nameFile(userInfoFileName, userInfoDir), JSON.stringify(data, null, 2), 'utf-8', function (err) {
+            fs.writeFile(nameFile(userInfoFileName, fqUserInfoDir), JSON.stringify(data, null, 2), 'utf-8', function (err) {
                 if (err) {
                     console.log(err);
                 }
@@ -260,17 +280,13 @@ function buildUserInfoQueue(searchArray) {
 // *** End Get GitHub User Info *** //
 
 // *** Helper Methods **//
-function nameDir(dir) {
-    const dataDir = 'Data';
-    return path.join(__dirname, dataDir, dir);
-}
 
 function nameFile(name, dir, ext) {
     ext = _.isNil(ext) ? '.json' : '.' + ext;
-    dir = _.isNil(dir) ? '' : dir;
+    dir = _.isNil(dir) ? fqSearchDir : dir;
     name = name + (new Date).getTime();
     return path.format({
-        dir: nameDir(dir),
+        dir: dir,
         name: name,
         ext: ext
     });
