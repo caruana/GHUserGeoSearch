@@ -48,7 +48,7 @@ init();
 // *** Initialize Tasks *** //;
 function init() {
 
-    const searchArray = ['zzl0'];
+    const searchArray = buildSearchQuery();
 
     console.log('**************************************');
     console.log('Executing ' + searchArray.length + ' API Calls.');
